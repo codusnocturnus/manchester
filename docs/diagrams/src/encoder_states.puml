@@ -1,0 +1,59 @@
+@startuml
+title Manchester encoder states
+
+note as N1
+  <b>Parameters</b>
+    wordSize (<i>integer</i>)
+    bitTime (<i>time</i>)
+  <b>Inputs</b>
+    data[wordSize] (<i>Boolean</i>)
+  <b>Outputs</b>
+    output (<i>Boolean</i>)
+
+  <b>Notes:</b>
+    - Sends 0's in the Quiescent state.
+    - Should be left in the Quiescent
+      state for a minimum period before
+      the first word is queued to allow
+      synchronization.
+    - All data words should start with 1.
+end note
+
+
+[*]-->Quiescent
+
+state Quiescent {
+    [*]-->HiPeriod
+    HiPeriod: t=0
+    HiPeriod: output = HI
+    HiPeriod->LoPeriod: t >= bitTime/2
+    HiPeriod-->[*]: new word
+
+    LoPeriod: output = LO
+    LoPeriod->HiPeriod: t >= bitTime
+}
+Quiescent-->StartBitInit
+
+StartBitInit: bitCount = 0
+
+StartBitInit-->StartBitMid: t >= bitTime/2
+
+StartBitMid: output = LO
+state MidWord <<choice>>
+StartBitMid-->MidWord: t >= bitTime
+
+MidWord-->BitInit: bitCount < wordSize
+MidWord-->WordExit: bitCount == wordSize
+
+BitInit: t = 0
+BitInit: output = !data[bitCount]
+BitInit-->MidBit: t >= bitTime/2
+
+MidBit: output = !output
+MidBit: bitCount += 1
+MidBit-->MidWord: t >= bitTime
+
+WordExit: output = HI
+WordExit-->Quiescent
+
+@enduml

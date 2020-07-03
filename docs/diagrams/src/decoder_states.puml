@@ -1,0 +1,61 @@
+@startuml
+title Manchester decoder states
+
+note as N1
+  <b>Parameters</b>
+    wordSize (<i>integer</i>)
+    bitTime (<i>time</i>)
+    samples (<i>integer</i>)
+  <b>Inputs</b>
+    input (<i>Boolean</i>)
+  <b>Outputs</b>
+    data[wordSize] (<i>Boolean</i>)
+    error (<i>Boolean</i>)
+  <b>Notes:</b>
+    - Clock synchronization (bitTime
+      adjustment) can occur in the
+      Quiescent state.
+    - It is expected that the sender will
+      wait a minimum period before
+      transmitting data at startup.
+    - Start bit is not considered part of
+      a word.
+end note
+
+[*]-->Quiescent
+
+Quiescent-->WordInit: bit timeout (input stays HI)
+
+WordInit: t=0
+WordInit: bitCount = 0
+WordInit: data[] = 0
+WordInit: error = false
+state WordCheck <<choice>>
+WordInit-->WordCheck: edge detected
+
+WordCheck-->WordConfirmed: t <= bitTime/2 + bitTime/samples
+WordCheck-->Exception: t > bitTime/2 + bitTime/samples
+
+Exception: error = true
+Exception-->Quiescent: t >= (wordSize - bitCount) * bitTime
+
+state MidWord <<choice>>
+WordConfirmed-->MidWord: t >= bitTime
+
+MidWord-->WordExit: bitCount == wordSize
+MidWord-->BitInit: bitCount < wordSize
+
+BitInit: t = 0
+state BitCheck <<choice>>
+BitInit-->BitCheck: edge detected
+
+BitCheck-->MidBit: t <= bitTime/2 + bitTime/samples
+BitCheck-->Exception: t > bitTime/2 + bitTime/samples
+
+MidBit: data[bitCount] = input
+MidBit: bitCount += 1
+MidBit-->MidWord: t >= bitTime
+
+WordExit-->Quiescent
+
+@enduml

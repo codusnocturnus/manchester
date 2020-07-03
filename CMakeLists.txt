@@ -20,7 +20,7 @@ project(top
 set(EXTERNAL_VCPKG_DIR "" CACHE STRING "Allows the project to use an existing external vcpkg instance.")
 include(vcpkg_utilities)
 get_vcpkg(${EXTERNAL_VCPKG_DIR})
-vcpkg_packagefile("vcpkgs.txt")
+vcpkg_packagefile("${CMAKE_CURRENT_LIST_DIR}/vcpkgs.txt")
 
 include(ExternalProject)
 set_property(DIRECTORY
@@ -30,7 +30,26 @@ set_property(DIRECTORY
 ExternalProject_Add(hello
     DEPENDS ${VCPKG_DEPENDENCIES}
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/src
+    DOWNLOAD_COMMAND ""
     INSTALL_COMMAND ""
+    ALWAYS TRUE
     CMAKE_ARGS ${CL_ARGS};
+               --no-warn-unused-cli;
+               -DCMAKE_TOOLCHAIN_FILE=${VCPKG_DIR}/scripts/buildsystems/vcpkg.cmake
+)
+
+set_property(DIRECTORY
+    PROPERTY
+        EP_BASE tests
+)
+include(CTest)
+ExternalProject_Add(tests
+    DEPENDS ${VCPKG_DEPENDENCIES}
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/tests
+    DOWNLOAD_COMMAND ""
+    INSTALL_COMMAND ""
+    ALWAYS TRUE
+    CMAKE_ARGS ${CL_ARGS};
+               --no-warn-unused-cli;
                -DCMAKE_TOOLCHAIN_FILE=${VCPKG_DIR}/scripts/buildsystems/vcpkg.cmake
 )
