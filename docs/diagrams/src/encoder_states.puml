@@ -7,6 +7,9 @@ note as N1
     bitTime (<i>time</i>)
   <b>Inputs</b>
     data[wordSize] (<i>Boolean</i>)
+  <b>Events</b>
+    clockEdge
+    newWord
   <b>Outputs</b>
     output (<i>Boolean</i>)
 
@@ -23,35 +26,38 @@ end note
 [*]-->Quiescent
 
 state Quiescent {
-    [*]-->HiPeriod
-    HiPeriod: t=0
-    HiPeriod: output = HI
-    HiPeriod->LoPeriod: t >= bitTime/2
-    HiPeriod-->[*]: new word
+    [*]-->HiToggle
+    HiToggle: output = HI
+    HiToggle->LoToggle: clockEdge
+    HiToggle-->HiDataReady: newData
+    
+    LoToggle: output = LO
+    LoToggle->HiToggle: clockEdge
+    LoToggle-->LoDataReady: newData
 
-    LoPeriod: output = LO
-    LoPeriod->HiPeriod: t >= bitTime
+    HiDataReady-->LoDataReady: clockEdge
+
+    LoDataReady-->[*]: clockEdge
 }
 Quiescent-->StartBitInit
 
 StartBitInit: bitCount = 0
 
-StartBitInit-->StartBitMid: t >= bitTime/2
+StartBitInit-->StartBitMid: clockEdge
 
 StartBitMid: output = LO
 state MidWord <<choice>>
-StartBitMid-->MidWord: t >= bitTime
+StartBitMid-->MidWord: clockEdge
 
 MidWord-->BitInit: bitCount < wordSize
 MidWord-->WordExit: bitCount == wordSize
 
-BitInit: t = 0
 BitInit: output = !data[bitCount]
-BitInit-->MidBit: t >= bitTime/2
+BitInit-->MidBit: clockEdge
 
 MidBit: output = !output
 MidBit: bitCount += 1
-MidBit-->MidWord: t >= bitTime
+MidBit-->MidWord: clockEdge
 
 WordExit: output = HI
 WordExit-->Quiescent

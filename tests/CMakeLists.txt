@@ -16,10 +16,19 @@ set(SOURCES
 add_executable(manchester-tests
     ${SOURCES}
 )
+target_include_directories(manchester-tests
+    PRIVATE
+        ${MANCHESTER_ROOT}/src
+)
 find_package(Catch2 CONFIG REQUIRED)
 target_link_libraries(manchester-tests
     PRIVATE
         Catch2::Catch2
+)
+set_target_properties(manchester-tests
+    PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED TRUE
 )
 
 include(CTest)

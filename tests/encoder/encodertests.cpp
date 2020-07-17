@@ -1,7 +1,10 @@
 #include <catch2/catch.hpp>
 
+#include "encoder/encodercontext.hpp"
+
 TEST_CASE("Defaults to Quiescent", "[encoder]") {
-    REQUIRE(true);
+    manchester::EncoderContext ec;
+    REQUIRE(ec.statename() == "QUIESCENT (HI)");
 }
 
 TEST_CASE("Send zeros in Quiescent", "[encoder]") {

@@ -30,9 +30,10 @@ set_property(DIRECTORY
 ExternalProject_Add(hello
     DEPENDS ${VCPKG_DEPENDENCIES}
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/src
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/hello
     DOWNLOAD_COMMAND ""
     INSTALL_COMMAND ""
-    ALWAYS TRUE
+    BUILD_ALWAYS TRUE
     CMAKE_ARGS ${CL_ARGS};
                --no-warn-unused-cli;
                -DCMAKE_TOOLCHAIN_FILE=${VCPKG_DIR}/scripts/buildsystems/vcpkg.cmake
@@ -46,10 +47,13 @@ include(CTest)
 ExternalProject_Add(tests
     DEPENDS ${VCPKG_DEPENDENCIES}
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/tests
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/tests
     DOWNLOAD_COMMAND ""
     INSTALL_COMMAND ""
-    ALWAYS TRUE
+    TEST_COMMAND "ctest"
+    BUILD_ALWAYS TRUE
     CMAKE_ARGS ${CL_ARGS};
                --no-warn-unused-cli;
+               -DMANCHESTER_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
                -DCMAKE_TOOLCHAIN_FILE=${VCPKG_DIR}/scripts/buildsystems/vcpkg.cmake
 )
